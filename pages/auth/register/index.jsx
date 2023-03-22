@@ -14,34 +14,25 @@ import {
   Typography,
   InputAdornment,
   IconButton,
-  Divider,
   Box,
-  Alert,
-  AlertTitle,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  CardHeader,
-  CardActions,
   Modal,
-  Backdrop,
-  Fade,
   Tabs,
   Tab,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LoadingButton from "@mui/lab/LoadingButton";
-import DangerousIcon from "@mui/icons-material/Dangerous";
+import CloseIcon from "@mui/icons-material/Close";
+import DoneIcon from "@mui/icons-material/Done";
 
 import { styled } from "@mui/material/styles";
 
 const MyCard = styled(Card)({
   margin: "auto",
   marginTop: "10%",
-  maxWidth: 500,
+  width: "50vh",
   textAlign: "center",
-  borderRadius: "20px",
+  borderRadius: "40px",
   padding: "25px",
 });
 
@@ -73,19 +64,6 @@ const MyLoadingButton = styled(LoadingButton)({
   },
 });
 
-const SecondButton = styled(Button)({
-  marginTop: "20px",
-  borderRadius: "20px",
-  background: "#FFFF",
-  borderColor: "#7E98DF",
-  color: "#7E98DF",
-  "&:hover": {
-    backgroundColor: "#7E98DF",
-    borderColor: "#7E98DF",
-    color: "#FFFF",
-  },
-});
-
 const MyTextField = styled(TextField)({
   "& label": {
     // color: "#46505c",
@@ -106,14 +84,23 @@ const MyTextField = styled(TextField)({
       borderColor: "#DB3022",
     },
   },
-  // marginBottom: "50px",
+  marginBottom: "-5px",
 });
 
 const Register = () => {
+  const router = useRouter();
   const [value, setValue] = React.useState(0);
-  console.log("value->", value);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
+
+    // if (newValue == 0) {
+    //   handleClearSeller();
+    // }
+
+    // if (newValue != 0) {
+    //   handleClearCustomer();
+    // }
   };
 
   const [fullname, setFullname] = React.useState(null);
@@ -131,6 +118,10 @@ const Register = () => {
 
   const [isLoadingUser, setIsLoadingUser] = React.useState(false);
   let isDisabledUser = true;
+
+  const [showModal, setShowModal] = React.useState(false);
+  const [showModalSuccess, setShowModalSuccess] = React.useState(false);
+  const [errBackendSeller, setErrBackendSeller] = React.useState(null);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -201,9 +192,13 @@ const Register = () => {
         }
       );
       setIsLoadingUser(false);
+      setShowModalSuccess(true);
+      router.push("/auth/login");
     } catch (error) {
+      console.log("handleRegisterUserERROR", error);
       setIsLoadingUser(false);
-      console.log("error user register", error);
+      setErrBackendSeller(error?.response?.data?.message?.message);
+      setShowModal(true);
     }
   };
 
@@ -389,9 +384,15 @@ const Register = () => {
 
   const [isLoadingSeller, setIsLoadingSeller] = React.useState(false);
 
-  const [showModal, setShowModal] = React.useState(false);
-  const [errBackendSeller, setErrBackendSeller] = React.useState(null);
+  // const [showModal, setShowModal] = React.useState(false);
+  // const [showModalSuccess, setShowModalSuccess] = React.useState(false);
+  // const [errBackendSeller, setErrBackendSeller] = React.useState(null);
+
   let isDisabledSeller = true;
+
+  const handleClickShowPasswordSeller = () => {
+    setShowPasswordSeller(!showPasswordSeller);
+  };
 
   const handleChangeNameSeller = (event) => {
     const name = event.target.value;
@@ -467,7 +468,13 @@ const Register = () => {
   };
 
   const handleClose = () => {
+    //MODAL ERROR
     setShowModal(false);
+  };
+
+  const handleCloseSuccess = () => {
+    //MODAL SUCCESS
+    setShowModalSuccess(false);
   };
 
   if (
@@ -495,6 +502,8 @@ const Register = () => {
         }
       );
       setIsLoadingSeller(false);
+      setShowModalSuccess(true);
+      router.push("/auth/login");
     } catch (error) {
       setIsLoadingSeller(false);
       console.log("error user register", error);
@@ -650,9 +659,9 @@ const Register = () => {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={handleClickShowPassword}
+                  onClick={handleClickShowPasswordSeller}
                   onMouseDown={handleMouseDownPassword}>
-                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                  {showPasswordSeller ? <Visibility /> : <VisibilityOff />}
                 </IconButton>
               </InputAdornment>
             ),
@@ -677,9 +686,9 @@ const Register = () => {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={handleClickShowPassword}
+                  onClick={handleClickShowPasswordSeller}
                   onMouseDown={handleMouseDownPassword}>
-                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                  {showPasswordSeller ? <Visibility /> : <VisibilityOff />}
                 </IconButton>
               </InputAdornment>
             ),
@@ -733,27 +742,89 @@ const Register = () => {
       <MyModal open={showModal} onClose={handleClose}>
         <MyCard>
           <CardContent>
+            <CloseIcon
+              fontSize="small"
+              sx={{
+                backgroundColor: "red",
+                color: "white",
+                width: "100px",
+                height: "100px",
+                borderRadius: "50px",
+              }}
+            />
+
             <Typography
-              variant="h4"
+              variant="h5"
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                color: "red",
+                fontWeight: "bold",
+                marginTop: "20px",
               }}>
-              <Alert variant="filled" severity="error">
-                ERROR OCCURED !
-              </Alert>
+              ERROR
             </Typography>
             <hr />
 
-            <Typography variant="body1" sx={{ margin: "20px" }}>
-              <strong>{errBackendSeller.toUpperCase()}</strong>
+            {errBackendSeller ? (
+              <Typography variant="body1" sx={{ margin: "20px" }}>
+                <strong>{errBackendSeller.toUpperCase()}</strong>
+              </Typography>
+            ) : null}
+          </CardContent>
+        </MyCard>
+      </MyModal>
+    </>
+  );
+
+  const renderModalSuccess = (
+    <>
+      <MyModal open={showModalSuccess} onClose={handleCloseSuccess}>
+        <MyCard>
+          <CardContent>
+            <DoneIcon
+              fontSize="small"
+              sx={{
+                backgroundColor: "green",
+                color: "white",
+                width: "100px",
+                height: "100px",
+                borderRadius: "50px",
+              }}
+            />
+
+            <Typography
+              variant="h5"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "green",
+                fontWeight: "bold",
+                marginTop: "20px",
+              }}>
+              SUCCESS
             </Typography>
           </CardContent>
         </MyCard>
       </MyModal>
     </>
   );
+
+  const handleClearSeller = () => {
+    setFullnameSeller(null);
+    setEmailSeller(null);
+    setPasswordSeller(null);
+    setPhoneNumber(null);
+    setStoreName(null);
+  };
+
+  const handleClearCustomer = () => {
+    setFullname(null);
+    setEmail(null);
+    setPassword(null);
+  };
 
   return (
     <div>
@@ -779,19 +850,19 @@ const Register = () => {
               sx={{
                 width: "70vh",
                 height: "auto",
-                margin: "auto",
+                margin: "100px auto",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 borderRadius: "20px",
-                overflow: "hidden",
+                overflow: "auto",
               }}>
               <CardContent
                 style={{
                   textAlign: "center",
                   justifyContent: "center",
                   padding: "50px",
-                  overflow: "hidden",
+                  overflow: "auto",
                 }}>
                 <img
                   src="/images/icon-tuku.png"
@@ -850,11 +921,14 @@ const Register = () => {
                   variant="body1"
                   sx={{ marginTop: "30px", fontSize: 14, marginTop: "30px" }}>
                   Already have an Account ?{" "}
-                  <span style={{ cursor: "pointer", color: "#DB3022" }}>
+                  <span
+                    style={{ cursor: "pointer", color: "#DB3022" }}
+                    onClick={() => router.push("/auth/login")}>
                     Sign In
                   </span>
                 </Typography>
                 {renderModalErr}
+                {renderModalSuccess}
               </CardContent>
             </Card>
           </Grid>
